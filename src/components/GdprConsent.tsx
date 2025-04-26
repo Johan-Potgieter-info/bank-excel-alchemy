@@ -3,7 +3,7 @@ import React from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { Link } from 'react-router-dom';
-import { InfoCircledIcon } from '@radix-ui/react-icons';
+import { Info } from 'lucide-react';
 
 interface GdprConsentProps {
   checked: boolean;
@@ -27,7 +27,7 @@ export function GdprConsent({ checked, onCheckedChange }: GdprConsentProps) {
           I consent to the processing of my data
           <HoverCard>
             <HoverCardTrigger asChild>
-              <InfoCircledIcon className="h-4 w-4 cursor-help text-muted-foreground" />
+              <Info className="h-4 w-4 cursor-help text-muted-foreground" />
             </HoverCardTrigger>
             <HoverCardContent className="w-80">
               <div className="space-y-2">

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Progress } from '@/components/ui/progress';
-import { CircleNotch } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 interface ConversionProgressProps {
   progress: number;
@@ -13,7 +13,7 @@ export function ConversionProgress({ progress }: ConversionProgressProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3 mb-2">
-        <CircleNotch className="h-5 w-5 animate-spin text-primary" />
+        <Loader2 className="h-5 w-5 animate-spin text-primary" />
         <h4 className="font-medium">Converting your PDF</h4>
       </div>
       
