@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Progress } from '@/components/ui/progress';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Save } from 'lucide-react';
 
 interface ConversionProgressProps {
   progress: number;
@@ -9,6 +9,14 @@ interface ConversionProgressProps {
 
 export function ConversionProgress({ progress }: ConversionProgressProps) {
   const formattedProgress = Math.min(100, Math.round(progress));
+  
+  // Determine the current step based on progress
+  const getCurrentStep = () => {
+    if (formattedProgress < 30) return "Extracting data from PDF...";
+    if (formattedProgress < 70) return "Processing statement data...";
+    if (formattedProgress < 90) return "Formatting Excel document...";
+    return "Uploading to Google Drive...";
+  };
   
   return (
     <div className="space-y-4">
@@ -21,13 +29,20 @@ export function ConversionProgress({ progress }: ConversionProgressProps) {
       
       <div className="text-sm text-muted-foreground">
         <p className="flex justify-between">
-          <span>Processing statement data...</span>
+          <span>{getCurrentStep()}</span>
           <span>{formattedProgress}%</span>
         </p>
       </div>
       
+      {formattedProgress >= 90 && (
+        <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400">
+          <Save className="h-3 w-3" />
+          <span>Preparing Google Drive storage...</span>
+        </div>
+      )}
+      
       <div className="text-xs text-muted-foreground mt-4">
-        <p>Your Excel file will be ready soon. This may take a few moments depending on the file size.</p>
+        <p>Your Excel file will be saved to Google Drive. This may take a few moments depending on the file size.</p>
       </div>
     </div>
   );

@@ -12,6 +12,7 @@ import { FileCard } from "@/components/FileCard";
 import { GdprConsent } from "@/components/GdprConsent";
 import { FileHistory } from "@/components/FileHistory";
 import { ConversionProgress } from "@/components/ConversionProgress";
+import { ExternalLink } from "lucide-react";
 
 export default function Index() {
   const { toast } = useToast();
@@ -23,6 +24,7 @@ export default function Index() {
   const [gdprConsent, setGdprConsent] = useState(false);
   const [conversionComplete, setConversionComplete] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState("");
+  const [driveUrl, setDriveUrl] = useState("");
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
@@ -80,9 +82,11 @@ export default function Index() {
             setIsConverting(false);
             setConversionComplete(true);
             setDownloadUrl(`#${file.name.replace(".pdf", ".xlsx")}`);
+            // Simulate Google Drive URL
+            setDriveUrl(`https://drive.google.com/file/d/${Math.random().toString(36).substring(2, 15)}/view`);
             toast({
               title: "Conversion Complete",
-              description: "Your Excel file is ready to download.",
+              description: "Your Excel file is saved to Google Drive and ready to download.",
             });
           }, 500);
           return 100;
@@ -113,11 +117,23 @@ export default function Index() {
         title: "Download Complete",
         description: "Your Excel file has been saved to your device.",
       });
-      // Reset the process
-      setFile(null);
-      setConversionComplete(false);
-      setDownloadUrl("");
     }, 1500);
+  };
+
+  const handleOpenInDrive = () => {
+    window.open(driveUrl, '_blank');
+    toast({
+      title: "Opening Google Drive",
+      description: "Your Excel file is opening in Google Drive.",
+    });
+  };
+
+  const handleReset = () => {
+    // Reset the process
+    setFile(null);
+    setConversionComplete(false);
+    setDownloadUrl("");
+    setDriveUrl("");
   };
 
   return (
@@ -139,7 +155,7 @@ export default function Index() {
             <CardHeader>
               <CardTitle>PDF to Excel Converter</CardTitle>
               <CardDescription>
-                Upload your bank statement PDF and convert it to a structured Excel file.
+                Upload your bank statement PDF and convert it to a structured Excel file on Google Drive.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -161,11 +177,20 @@ export default function Index() {
                     Conversion Complete!
                   </h3>
                   <p className="text-green-700 dark:text-green-400 text-sm mb-4">
-                    Your bank statement has been successfully converted to Excel.
+                    Your bank statement has been successfully converted to Excel and saved to Google Drive.
                   </p>
-                  <Button onClick={handleDownload} className="w-full">
-                    Download Excel File
-                  </Button>
+                  <div className="space-y-3">
+                    <Button onClick={handleOpenInDrive} className="w-full flex items-center justify-center gap-2">
+                      <ExternalLink className="h-4 w-4" /> 
+                      Open in Google Drive
+                    </Button>
+                    <Button onClick={handleDownload} variant="outline" className="w-full">
+                      Download Excel File
+                    </Button>
+                    <Button onClick={handleReset} variant="ghost" className="w-full">
+                      Convert Another PDF
+                    </Button>
+                  </div>
                 </div>
               )}
               
@@ -193,7 +218,7 @@ export default function Index() {
             <CardHeader>
               <CardTitle>Settings</CardTitle>
               <CardDescription>
-                Configure your conversion preferences and account settings.
+                Configure your conversion preferences and Google Drive settings.
               </CardDescription>
             </CardHeader>
             <CardContent>
