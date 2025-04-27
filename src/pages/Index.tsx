@@ -1,21 +1,15 @@
-
 import React, { useState, useCallback, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { FileUploader } from "@/components/FileUploader";
-import { FileCard } from "@/components/FileCard";
-import { GdprConsent } from "@/components/GdprConsent";
 import { FileHistory } from "@/components/FileHistory";
 import { ConversionProgress } from "@/components/ConversionProgress";
-import { ExternalLink } from "lucide-react";
 import { ApiSettings } from "@/components/ApiSettings";
 import { ConvertApiService } from "@/services/convertApi";
 import { GoogleDriveService } from "@/services/googleDrive";
+import { ConversionForm } from "@/components/ConversionForm";
+import { ConversionComplete } from "@/components/ConversionComplete";
+import { PasswordDialog } from "@/components/PasswordDialog";
 
 export default function Index() {
   const { toast } = useToast();
@@ -43,30 +37,6 @@ export default function Index() {
     
     checkDriveConfig();
   }, []);
-
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    if (acceptedFiles.length > 0) {
-      const selectedFile = acceptedFiles[0];
-      if (selectedFile.type === "application/pdf") {
-        setFile(selectedFile);
-        toast({
-          title: "File selected",
-          description: `${selectedFile.name} is ready for conversion.`,
-        });
-        
-        // Simulate checking if file is password protected
-        if (Math.random() > 0.7) {
-          setIsPasswordDialogOpen(true);
-        }
-      } else {
-        toast({
-          title: "Invalid file",
-          description: "Please upload a PDF file.",
-          variant: "destructive",
-        });
-      }
-    }
-  }, [toast]);
 
   const handleConvert = useCallback(async () => {
     if (!gdprConsent) {
@@ -106,10 +76,7 @@ export default function Index() {
         setProgress(100);
       }
       
-      // Set the download URL from the conversion result
       setDownloadUrl(conversionResult.downloadUrl);
-      
-      // Complete the process
       setIsConverting(false);
       setConversionComplete(true);
       
@@ -130,8 +97,7 @@ export default function Index() {
     }
   }, [file, gdprConsent, isDriveConfigured, toast]);
 
-  const handlePasswordSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handlePasswordSubmit = (password: string) => {
     setIsPasswordDialogOpen(false);
     toast({
       title: "Password Applied",
@@ -149,7 +115,6 @@ export default function Index() {
       return;
     }
     
-    // Open the download URL in a new tab
     window.open(downloadUrl, '_blank');
     
     toast({
@@ -177,7 +142,6 @@ export default function Index() {
   };
 
   const handleReset = () => {
-    // Reset the process
     setFile(null);
     setConversionComplete(false);
     setDownloadUrl("");
@@ -207,28 +171,15 @@ export default function Index() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {!isDriveConfigured && !isConverting && !conversionComplete && (
-                <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-md border border-amber-200 dark:border-amber-900/30 mb-4">
-                  <p className="text-amber-700 dark:text-amber-400 text-sm">
-                    ⚠️ Google Drive is not configured. Your files will be available for download only and won't be saved to Google Drive.
-                  </p>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="mt-2"
-                    onClick={() => document.querySelector('[data-value="settings"]')?.dispatchEvent(new MouseEvent('click'))}
-                  >
-                    Configure Google Drive
-                  </Button>
-                </div>
-              )}
-              
-              {!file && !isConverting && !conversionComplete && (
-                <FileUploader onDrop={onDrop} />
-              )}
-              
-              {file && !isConverting && !conversionComplete && (
-                <FileCard file={file} onRemove={() => setFile(null)} />
+              {!isConverting && !conversionComplete && (
+                <ConversionForm
+                  file={file}
+                  setFile={setFile}
+                  gdprConsent={gdprConsent}
+                  setGdprConsent={setGdprConsent}
+                  onConvert={handleConvert}
+                  isDriveConfigured={isDriveConfigured}
+                />
               )}
               
               {isConverting && (
@@ -236,44 +187,14 @@ export default function Index() {
               )}
               
               {conversionComplete && (
-                <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-md border border-green-200 dark:border-green-900/30">
-                  <h3 className="font-medium text-green-800 dark:text-green-300 mb-2">
-                    Conversion Complete!
-                  </h3>
-                  <p className="text-green-700 dark:text-green-400 text-sm mb-4">
-                    {isDriveConfigured 
-                      ? "Your bank statement has been successfully converted to Excel and saved to Google Drive."
-                      : "Your bank statement has been successfully converted to Excel."}
-                  </p>
-                  <div className="space-y-3">
-                    {isDriveConfigured && (
-                      <Button onClick={handleOpenInDrive} className="w-full flex items-center justify-center gap-2">
-                        <ExternalLink className="h-4 w-4" /> 
-                        Open in Google Drive
-                      </Button>
-                    )}
-                    <Button onClick={handleDownload} variant={isDriveConfigured ? "outline" : "default"} className="w-full">
-                      Download Excel File
-                    </Button>
-                    <Button onClick={handleReset} variant="ghost" className="w-full">
-                      Convert Another PDF
-                    </Button>
-                  </div>
-                </div>
+                <ConversionComplete
+                  isDriveConfigured={isDriveConfigured}
+                  onOpenInDrive={handleOpenInDrive}
+                  onDownload={handleDownload}
+                  onReset={handleReset}
+                />
               )}
-              
-              <GdprConsent 
-                checked={gdprConsent} 
-                onCheckedChange={setGdprConsent} 
-              />
             </CardContent>
-            <CardFooter>
-              {file && !isConverting && !conversionComplete && (
-                <Button onClick={handleConvert} className="w-full">
-                  Convert to Excel
-                </Button>
-              )}
-            </CardFooter>
           </Card>
         </TabsContent>
         
@@ -286,32 +207,11 @@ export default function Index() {
         </TabsContent>
       </Tabs>
       
-      <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
-        <DialogContent>
-          <form onSubmit={handlePasswordSubmit}>
-            <DialogHeader>
-              <DialogTitle>PDF Password Required</DialogTitle>
-              <DialogDescription>
-                This PDF appears to be password protected. Please enter the password to proceed.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="py-4">
-              <Label htmlFor="password">Password</Label>
-              <Input 
-                id="password" 
-                type="password" 
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-2"
-                placeholder="Enter PDF password" 
-              />
-            </div>
-            <DialogFooter>
-              <Button type="submit">Apply Password</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <PasswordDialog
+        open={isPasswordDialogOpen}
+        onOpenChange={setIsPasswordDialogOpen}
+        onSubmit={handlePasswordSubmit}
+      />
     </div>
   );
 }
