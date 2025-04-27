@@ -9,6 +9,13 @@ export interface ConversionResult {
   fileName: string;
 }
 
+export class PasswordRequiredError extends Error {
+  constructor() {
+    super("PDF is password protected");
+    this.name = "PasswordRequiredError";
+  }
+}
+
 /**
  * Service to handle PDF to Excel conversions using ConvertAPI
  */
@@ -16,10 +23,12 @@ export class ConvertApiService {
   /**
    * Convert PDF file to Excel format
    * @param file PDF file to convert
+   * @param password Optional password for protected PDFs
    * @param onProgress Function to handle progress updates
    */
   static async convertPdfToExcel(
     file: File,
+    password?: string,
     onProgress?: (progress: number) => void
   ): Promise<ConversionResult> {
     try {
@@ -30,6 +39,11 @@ export class ConvertApiService {
       const formData = new FormData();
       formData.append("File", file);
       formData.append("StoreFile", "true");
+      
+      // Add password if provided
+      if (password) {
+        formData.append("Password", password);
+      }
       
       if (onProgress) onProgress(15);
 
@@ -48,8 +62,14 @@ export class ConvertApiService {
       if (onProgress) onProgress(50);
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error("ConvertAPI error:", errorText);
+        const errorData = await response.json();
+        console.error("ConvertAPI error:", errorData);
+        
+        // Check if this is a password-protected PDF error
+        if (errorData.Code === 5003 && errorData.Message.includes("password protected")) {
+          throw new PasswordRequiredError();
+        }
+        
         throw new Error(`Conversion failed: ${response.status} ${response.statusText}`);
       }
 
@@ -71,6 +91,11 @@ export class ConvertApiService {
         fileName: result.Files[0].FileName || file.name.replace('.pdf', '.xlsx')
       };
     } catch (error) {
+      // Check if it's a password protected error
+      if (error instanceof PasswordRequiredError) {
+        throw error; // Re-throw to handle in the component
+      }
+      
       console.error("Error in PDF conversion:", error);
       toast.error("Failed to convert PDF to Excel. Please try again.");
       throw error;

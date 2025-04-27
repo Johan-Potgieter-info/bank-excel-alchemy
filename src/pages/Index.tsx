@@ -17,12 +17,14 @@ export default function Index() {
     progress,
     conversionComplete,
     gdprConsent,
+    passwordRequired,
     setFile,
     setGdprConsent,
     handleConvert,
     handleReset,
     handleDownload,
     handleOpenInDrive,
+    setPasswordRequired,
   } = useFileConversion(isDriveConfigured);
 
   // Check if Google Drive is configured
@@ -39,12 +41,21 @@ export default function Index() {
     checkDriveConfig();
   }, []);
 
+  // Effect to handle password required state
+  useEffect(() => {
+    if (passwordRequired) {
+      setIsPasswordDialogOpen(true);
+    }
+  }, [passwordRequired]);
+
   const handlePasswordSubmit = (password: string) => {
     setIsPasswordDialogOpen(false);
     toast({
       title: "Password Applied",
       description: "Your PDF password has been applied.",
     });
+    // Try conversion again with the password
+    handleConvert(password);
   };
 
   return (
@@ -63,7 +74,7 @@ export default function Index() {
         isDriveConfigured={isDriveConfigured}
         setFile={setFile}
         setGdprConsent={setGdprConsent}
-        handleConvert={handleConvert}
+        handleConvert={() => handleConvert()}
         handleReset={handleReset}
         handleDownload={handleDownload}
         handleOpenInDrive={handleOpenInDrive}
@@ -71,7 +82,12 @@ export default function Index() {
       
       <PasswordDialog
         open={isPasswordDialogOpen}
-        onOpenChange={setIsPasswordDialogOpen}
+        onOpenChange={(open) => {
+          setIsPasswordDialogOpen(open);
+          if (!open) {
+            setPasswordRequired(false);
+          }
+        }}
         onSubmit={handlePasswordSubmit}
       />
     </div>

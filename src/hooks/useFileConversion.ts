@@ -1,7 +1,7 @@
 
 import { useState, useCallback } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { ConvertApiService } from "@/services/convertApi";
+import { ConvertApiService, PasswordRequiredError } from "@/services/convertApi";
 import { GoogleDriveService } from "@/services/googleDrive";
 
 interface UseFileConversionReturn {
@@ -12,12 +12,14 @@ interface UseFileConversionReturn {
   downloadUrl: string;
   driveUrl: string;
   gdprConsent: boolean;
+  passwordRequired: boolean;
   setFile: (file: File | null) => void;
   setGdprConsent: (consent: boolean) => void;
-  handleConvert: () => Promise<void>;
+  handleConvert: (password?: string) => Promise<void>;
   handleReset: () => void;
   handleDownload: () => void;
   handleOpenInDrive: () => void;
+  setPasswordRequired: (required: boolean) => void;
 }
 
 export function useFileConversion(isDriveConfigured: boolean): UseFileConversionReturn {
@@ -29,8 +31,9 @@ export function useFileConversion(isDriveConfigured: boolean): UseFileConversion
   const [downloadUrl, setDownloadUrl] = useState("");
   const [driveUrl, setDriveUrl] = useState("");
   const [gdprConsent, setGdprConsent] = useState(false);
+  const [passwordRequired, setPasswordRequired] = useState(false);
 
-  const handleConvert = useCallback(async () => {
+  const handleConvert = useCallback(async (password?: string) => {
     if (!gdprConsent) {
       toast({
         title: "GDPR Consent Required",
@@ -54,7 +57,11 @@ export function useFileConversion(isDriveConfigured: boolean): UseFileConversion
 
     try {
       // Step 1: Convert PDF to Excel using ConvertAPI
-      const conversionResult = await ConvertApiService.convertPdfToExcel(file, setProgress);
+      const conversionResult = await ConvertApiService.convertPdfToExcel(
+        file, 
+        password, 
+        setProgress
+      );
       
       // Step 2: Upload the Excel file to Google Drive (if configured)
       if (isDriveConfigured) {
@@ -71,6 +78,7 @@ export function useFileConversion(isDriveConfigured: boolean): UseFileConversion
       setDownloadUrl(conversionResult.downloadUrl);
       setIsConverting(false);
       setConversionComplete(true);
+      setPasswordRequired(false);
       
       toast({
         title: "Conversion Complete",
@@ -80,6 +88,13 @@ export function useFileConversion(isDriveConfigured: boolean): UseFileConversion
       });
     } catch (error) {
       console.error("Error in conversion process:", error);
+      
+      if (error instanceof PasswordRequiredError) {
+        setIsConverting(false);
+        setPasswordRequired(true);
+        return;
+      }
+      
       setIsConverting(false);
       toast({
         title: "Conversion Failed",
@@ -94,6 +109,7 @@ export function useFileConversion(isDriveConfigured: boolean): UseFileConversion
     setConversionComplete(false);
     setDownloadUrl("");
     setDriveUrl("");
+    setPasswordRequired(false);
   }, []);
 
   const handleDownload = useCallback(() => {
@@ -140,11 +156,13 @@ export function useFileConversion(isDriveConfigured: boolean): UseFileConversion
     downloadUrl,
     driveUrl,
     gdprConsent,
+    passwordRequired,
     setFile,
     setGdprConsent,
     handleConvert,
     handleReset,
     handleDownload,
     handleOpenInDrive,
+    setPasswordRequired,
   };
 }
