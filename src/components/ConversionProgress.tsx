@@ -13,8 +13,8 @@ export function ConversionProgress({ progress }: ConversionProgressProps) {
   // Determine the current step based on progress
   const getCurrentStep = () => {
     if (formattedProgress < 30) return "Extracting data from PDF...";
-    if (formattedProgress < 70) return "Processing statement data...";
-    if (formattedProgress < 90) return "Formatting Excel document...";
+    if (formattedProgress < 70) return "Processing with ConvertAPI...";
+    if (formattedProgress < 90) return "Finalizing Excel document...";
     return "Uploading to Google Drive...";
   };
   
@@ -37,12 +37,12 @@ export function ConversionProgress({ progress }: ConversionProgressProps) {
       {formattedProgress >= 90 && (
         <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400">
           <Save className="h-3 w-3" />
-          <span>Preparing Google Drive storage...</span>
+          <span>Saving to your Google Drive folder...</span>
         </div>
       )}
       
       <div className="text-xs text-muted-foreground mt-4">
-        <p>Your Excel file will be saved to Google Drive. This may take a few moments depending on the file size.</p>
+        <p>Your Excel file will be saved to your Google Drive folder. This may take a few moments depending on the file size.</p>
       </div>
     </div>
   );

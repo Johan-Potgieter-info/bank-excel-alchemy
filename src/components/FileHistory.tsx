@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileIcon, DownloadIcon, Trash2Icon, FileSpreadsheet, ExternalLink } from 'lucide-react';
+import { FileSpreadsheet, DownloadIcon, Trash2Icon, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 // Mock data for demonstration
@@ -12,7 +12,8 @@ const mockFiles = [
     convertedName: 'BankStatement_January2023.xlsx',
     date: '2025-04-25T14:32:00',
     size: '2.4 MB',
-    driveLink: 'https://drive.google.com/file/d/1abc123/view'
+    driveLink: 'https://drive.google.com/file/d/1abc123/view',
+    folder: 'PDFtoExcel'
   },
   { 
     id: '2',
@@ -20,7 +21,8 @@ const mockFiles = [
     convertedName: 'BankStatement_February2023.xlsx',
     date: '2025-04-23T09:15:00',
     size: '1.8 MB',
-    driveLink: 'https://drive.google.com/file/d/2def456/view'
+    driveLink: 'https://drive.google.com/file/d/2def456/view',
+    folder: 'PDFtoExcel'
   },
   { 
     id: '3',
@@ -28,7 +30,8 @@ const mockFiles = [
     convertedName: 'BankStatement_March2023.xlsx', 
     date: '2025-04-21T16:45:00',
     size: '2.1 MB',
-    driveLink: 'https://drive.google.com/file/d/3ghi789/view'
+    driveLink: 'https://drive.google.com/file/d/3ghi789/view',
+    folder: 'PDFtoExcel'
   }
 ];
 
@@ -38,7 +41,7 @@ export function FileHistory() {
       <CardHeader>
         <CardTitle>Recent Conversions</CardTitle>
         <CardDescription>
-          Your recently converted files are saved to Google Drive for 24 hours before automatic deletion.
+          Your recently converted files are saved to the "PDFtoExcel" folder in your Google Drive.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -59,14 +62,11 @@ export function FileHistory() {
                       {file.convertedName}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {new Date(file.date).toLocaleDateString()} • {file.size}
+                      {new Date(file.date).toLocaleDateString()} • {file.size} • {file.folder}
                     </p>
                   </div>
                 </div>
                 <div className="flex space-x-2">
-                  <Button variant="outline" size="icon" title="Download file">
-                    <DownloadIcon className="h-4 w-4" />
-                  </Button>
                   <Button 
                     variant="outline" 
                     size="icon" 
