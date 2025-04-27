@@ -1,17 +1,13 @@
 
 import React, { useEffect, useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileHistory } from "@/components/FileHistory";
-import { ConversionProgress } from "@/components/ConversionProgress";
-import { ApiSettings } from "@/components/ApiSettings";
-import { ConversionForm } from "@/components/ConversionForm";
-import { ConversionComplete } from "@/components/ConversionComplete";
+import { useToast } from "@/hooks/use-toast";
+import { ConversionTabs } from "@/components/ConversionTabs";
 import { PasswordDialog } from "@/components/PasswordDialog";
 import { GoogleDriveService } from "@/services/googleDrive";
 import { useFileConversion } from "@/hooks/useFileConversion";
 
 export default function Index() {
+  const { toast } = useToast();
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [isDriveConfigured, setIsDriveConfigured] = useState(false);
 
@@ -58,57 +54,20 @@ export default function Index() {
         Convert your PDF bank statements to Excel with ease
       </p>
 
-      <Tabs defaultValue="convert" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="convert">Convert PDF</TabsTrigger>
-          <TabsTrigger value="history">File History</TabsTrigger>
-          <TabsTrigger value="settings">Settings</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="convert" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>PDF to Excel Converter</CardTitle>
-              <CardDescription>
-                Upload your bank statement PDF and convert it to a structured Excel file on Google Drive.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {!isConverting && !conversionComplete && (
-                <ConversionForm
-                  file={file}
-                  setFile={setFile}
-                  gdprConsent={gdprConsent}
-                  setGdprConsent={setGdprConsent}
-                  onConvert={handleConvert}
-                  isDriveConfigured={isDriveConfigured}
-                />
-              )}
-              
-              {isConverting && (
-                <ConversionProgress progress={progress} />
-              )}
-              
-              {conversionComplete && (
-                <ConversionComplete
-                  isDriveConfigured={isDriveConfigured}
-                  onOpenInDrive={handleOpenInDrive}
-                  onDownload={handleDownload}
-                  onReset={handleReset}
-                />
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="history">
-          <FileHistory />
-        </TabsContent>
-        
-        <TabsContent value="settings">
-          <ApiSettings />
-        </TabsContent>
-      </Tabs>
+      <ConversionTabs
+        file={file}
+        isConverting={isConverting}
+        progress={progress}
+        conversionComplete={conversionComplete}
+        gdprConsent={gdprConsent}
+        isDriveConfigured={isDriveConfigured}
+        setFile={setFile}
+        setGdprConsent={setGdprConsent}
+        handleConvert={handleConvert}
+        handleReset={handleReset}
+        handleDownload={handleDownload}
+        handleOpenInDrive={handleOpenInDrive}
+      />
       
       <PasswordDialog
         open={isPasswordDialogOpen}
