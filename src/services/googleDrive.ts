@@ -21,11 +21,17 @@ export class GoogleDriveService {
       // For now, we'll just store a reference to the fact that we're initialized
       this.apiKey = "initialized";
       console.log("Google Drive service initialized with service account:", this.serviceAccountEmail);
+      
+      // Store in localStorage to persist between page reloads
+      localStorage.setItem('gdrive_initialized', 'true');
+      
       toast.success("Google Drive service connected", {
         description: "Your files will be saved to your shared folder"
       });
     } catch (error) {
       console.error("Failed to initialize Google Drive service:", error);
+      localStorage.removeItem('gdrive_initialized');
+      this.apiKey = null;
       toast.error("Failed to connect to Google Drive");
       throw error;
     }
@@ -44,8 +50,13 @@ export class GoogleDriveService {
   ): Promise<string> {
     try {
       // Check if the service is initialized
-      if (!this.apiKey) {
+      if (!this.apiKey && !localStorage.getItem('gdrive_initialized')) {
         throw new Error("Google Drive service not initialized");
+      }
+      
+      // Set API key from localStorage if needed
+      if (!this.apiKey && localStorage.getItem('gdrive_initialized')) {
+        this.apiKey = "initialized";
       }
 
       if (onProgress) onProgress(90);
@@ -79,9 +90,14 @@ export class GoogleDriveService {
    */
   static async checkFolderAccess(): Promise<boolean> {
     try {
+      // Check localStorage first
+      if (localStorage.getItem('gdrive_initialized')) {
+        this.apiKey = "initialized";
+        return true;
+      }
+      
       // In a real implementation, you would make an API call to check access
-      // For now, we'll return true since we're assuming access was granted
-      return true;
+      return !!this.apiKey;
     } catch (error) {
       console.error("Error checking folder access:", error);
       return false;

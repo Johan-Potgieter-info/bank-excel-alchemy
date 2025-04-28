@@ -64,13 +64,25 @@ export function useFileConversion(isDriveConfigured: boolean): UseFileConversion
       );
       
       // Step 2: Upload the Excel file to Google Drive (if configured)
+      let driveFileUrl = "";
+      
       if (isDriveConfigured) {
-        const driveFileUrl = await GoogleDriveService.uploadFile(
-          conversionResult.downloadUrl,
-          conversionResult.fileName,
-          setProgress
-        );
-        setDriveUrl(driveFileUrl);
+        try {
+          driveFileUrl = await GoogleDriveService.uploadFile(
+            conversionResult.downloadUrl,
+            conversionResult.fileName,
+            setProgress
+          );
+          setDriveUrl(driveFileUrl);
+        } catch (driveError) {
+          console.error("Error uploading file to Google Drive:", driveError);
+          // Don't fail the entire process, just notify the user
+          toast({
+            title: "Google Drive Upload Failed",
+            description: "Your file was converted but couldn't be uploaded to Google Drive. You can still download it directly.",
+            variant: "warning",
+          });
+        }
       } else {
         setProgress(100);
       }
@@ -82,7 +94,7 @@ export function useFileConversion(isDriveConfigured: boolean): UseFileConversion
       
       toast({
         title: "Conversion Complete",
-        description: isDriveConfigured 
+        description: driveFileUrl
           ? "Your Excel file is saved to Google Drive and ready to download." 
           : "Your Excel file is ready to download.",
       });

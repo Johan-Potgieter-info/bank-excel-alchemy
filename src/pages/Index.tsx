@@ -10,6 +10,7 @@ export default function Index() {
   const { toast } = useToast();
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [isDriveConfigured, setIsDriveConfigured] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
 
   const {
     file,
@@ -50,10 +51,13 @@ export default function Index() {
 
   const handlePasswordSubmit = (password: string) => {
     setIsPasswordDialogOpen(false);
+    setCurrentPassword(password);
+    
     toast({
       title: "Password Applied",
       description: "Your PDF password has been applied.",
     });
+    
     // Try conversion again with the password
     handleConvert(password);
   };
@@ -74,7 +78,7 @@ export default function Index() {
         isDriveConfigured={isDriveConfigured}
         setFile={setFile}
         setGdprConsent={setGdprConsent}
-        handleConvert={() => handleConvert()}
+        handleConvert={() => handleConvert(currentPassword)}
         handleReset={handleReset}
         handleDownload={handleDownload}
         handleOpenInDrive={handleOpenInDrive}
