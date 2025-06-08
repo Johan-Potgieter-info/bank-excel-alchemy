@@ -1,8 +1,8 @@
 
 import { toast } from "sonner";
 
-const CONVERT_API_KEY = "secret_gwACX7APZCZuyT88";
-const API_BASE_URL = "https://v2.convertapi.com";
+// Backend endpoint that proxies requests to ConvertAPI
+const API_BASE_URL = "/api";
 
 export interface ConversionResult {
   downloadUrl: string;
@@ -47,17 +47,11 @@ export class ConvertApiService {
       
       if (onProgress) onProgress(15);
 
-      // Make the API request
-      const response = await fetch(
-        `${API_BASE_URL}/convert/pdf/to/xlsx?Secret=${CONVERT_API_KEY}`,
-        {
-          method: "POST",
-          body: formData,
-          headers: {
-            "Authorization": `Bearer ${CONVERT_API_KEY}`
-          }
-        }
-      );
+      // Make the API request to the backend proxy
+      const response = await fetch(`${API_BASE_URL}/convert`, {
+        method: "POST",
+        body: formData,
+      });
 
       if (onProgress) onProgress(50);
 
