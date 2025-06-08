@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { ConvertApiService, PasswordRequiredError } from "@/services/convertApi";
@@ -80,7 +79,7 @@ export function useFileConversion(isDriveConfigured: boolean): UseFileConversion
           toast({
             title: "Google Drive Upload Failed",
             description: "Your file was converted but couldn't be uploaded to Google Drive. You can still download it directly.",
-            variant: "warning",
+            variant: "default",
           });
         }
       } else {
