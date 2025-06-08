@@ -36,6 +36,20 @@ npm i
 npm run dev
 ```
 
+### Environment variables
+
+1. Copy `.env.example` to `.env`:
+
+   ```sh
+   cp .env.example .env
+   ```
+
+2. Edit `.env` and set your ConvertAPI key:
+
+   ```sh
+   VITE_CONVERT_API_KEY=your-convert-api-key
+   ```
+
 **Edit a file directly in GitHub**
 
 - Navigate to the desired file(s).
