@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { ConvertApiService, PasswordRequiredError } from "@/services/convertApi";
 import { GoogleDriveService } from "@/services/googleDrive";
+import { PdfAiService } from "@/services/pdfAi";
 
 interface UseFileConversionReturn {
   file: File | null;
@@ -15,6 +16,7 @@ interface UseFileConversionReturn {
   setFile: (file: File | null) => void;
   setGdprConsent: (consent: boolean) => void;
   handleConvert: (password?: string) => Promise<void>;
+  handleAiConvert: () => Promise<void>;
   handleReset: () => void;
   handleDownload: () => void;
   handleOpenInDrive: () => void;
@@ -115,6 +117,77 @@ export function useFileConversion(isDriveConfigured: boolean): UseFileConversion
     }
   }, [file, gdprConsent, isDriveConfigured, toast]);
 
+  const handleAiConvert = useCallback(async () => {
+    if (!gdprConsent) {
+      toast({
+        title: "GDPR Consent Required",
+        description: "Please consent to our data processing policy before proceeding.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!file) {
+      toast({
+        title: "No file selected",
+        description: "Please select a file first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsConverting(true);
+    setProgress(0);
+
+    try {
+      const conversionResult = await PdfAiService.convertPdfToExcel(
+        file,
+        setProgress
+      );
+
+      let driveFileUrl = "";
+
+      if (isDriveConfigured) {
+        try {
+          driveFileUrl = await GoogleDriveService.uploadFile(
+            conversionResult.downloadUrl,
+            conversionResult.fileName,
+            setProgress
+          );
+          setDriveUrl(driveFileUrl);
+        } catch (driveError) {
+          console.error("Error uploading file to Google Drive:", driveError);
+          toast({
+            title: "Google Drive Upload Failed",
+            description: "Your file was converted but couldn't be uploaded to Google Drive. You can still download it directly.",
+            variant: "warning",
+          });
+        }
+      } else {
+        setProgress(100);
+      }
+
+      setDownloadUrl(conversionResult.downloadUrl);
+      setIsConverting(false);
+      setConversionComplete(true);
+
+      toast({
+        title: "Conversion Complete",
+        description: driveFileUrl
+          ? "Your Excel file is saved to Google Drive and ready to download."
+          : "Your Excel file is ready to download.",
+      });
+    } catch (error) {
+      console.error("Error in AI conversion process:", error);
+      setIsConverting(false);
+      toast({
+        title: "Conversion Failed",
+        description: "There was an error converting your PDF file with AI. Please try again.",
+        variant: "destructive",
+      });
+    }
+  }, [file, gdprConsent, isDriveConfigured, toast]);
+
   const handleReset = useCallback(() => {
     setFile(null);
     setConversionComplete(false);
@@ -171,6 +244,7 @@ export function useFileConversion(isDriveConfigured: boolean): UseFileConversion
     setFile,
     setGdprConsent,
     handleConvert,
+    handleAiConvert,
     handleReset,
     handleDownload,
     handleOpenInDrive,
