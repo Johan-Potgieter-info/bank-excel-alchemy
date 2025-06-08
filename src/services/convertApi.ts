@@ -88,7 +88,7 @@ export class ConvertApiService {
       // Return the download URL and file name
       return {
         downloadUrl: result.Files[0].Url,
-        fileName: result.Files[0].FileName || file.name.replace('.pdf', '.xlsx')
+        fileName: result.Files[0].FileName || file.name.replace(/\.pdf$/i, '.xlsx')
       };
     } catch (error) {
       // Check if it's a password protected error
