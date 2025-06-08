@@ -60,6 +60,28 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
+## Linting
+
+This project uses **ESLint** with TypeScript support. All required packages are listed in `package.json` and will be installed when you run:
+
+```sh
+npm i
+```
+
+To check your code style, execute:
+
+```sh
+npm run lint
+```
+
+## Testing
+
+Unit tests are written with **Jest**. After installing dependencies, run:
+
+```sh
+npm test
+```
+
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/9dd3a537-09ac-44e4-9067-741456cb5bfd) and click on Share -> Publish.
